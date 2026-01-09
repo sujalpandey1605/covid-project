@@ -1,0 +1,41 @@
+
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Sujal@123
+      MYSQL_DATABASE: covid
+    ports:
+      - "3307:3306" # Mapped to 3307 to avoid conflict if local MySQL is running
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: covid-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      # Override DB URL to point to mysql service container
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/covid?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Sujal@123
+      # If using email, you might need to pass those env vars too or they stay defaults from properties
+
+  frontend:
+    build: ./frontend
+    container_name: covid-frontend
+    restart: always
+    ports:
+      - "3000:80" # Access UI at localhost:3000
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:
